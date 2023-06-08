@@ -1,10 +1,11 @@
 use secrecy::ExposeSecret;
-use actix_web::{get, web, App, HttpServer};
+use actix_web::{get, web::{self, to}, App, HttpServer};
 use std::error::Error;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
-use sqlx::Connection;
 use sqlx::Row;
+use uuid::Uuid;
+use chrono::Utc;
 
 mod todolist;
 use todolist::services;
@@ -15,8 +16,6 @@ struct AppState {
 
 #[derive(Serialize, Deserialize, Clone)]
 struct TodolistEntries {
-    id: i32,
-    date: i64,
     title: String,
 }
 
@@ -25,19 +24,31 @@ async fn index() -> String {
     "This is a health check".to_string()
 }
 
+async fn createTask(todolist: &TodolistEntries, pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    let query = "INSERT INTO tbl_todolist (id, title) VALUES ($1, $2)";
+
+    let _id = Uuid::new_v4();
+    sqlx::query(query)
+    .bind(&_id)
+    .bind(&todolist.title)
+    .execute(pool)
+    .await?;
+Ok(())
+}
+
 #[tokio::main]
 // async fn main() -> std::io::Result<()> {
 async fn main() -> Result<(), Box<dyn Error>> {
 
     let url = "postgres://postgres:password@localhost:5432/todolist";
     let pool = sqlx::postgres::PgPool::connect(url).await?;
+    
+    let dt = Utc::now();
+    let todo = TodolistEntries {
+        title: "chean pong tea".to_string(),
+    };
 
-    let res = sqlx::query("SELECT 1 + 1 as sum")
-                .fetch_one(&pool)
-                .await?;
-
-    let sum: i32 = res.get("sum");
-    println!("1 + 1 = {}", sum);
+    createTask(&todo, &pool).await?;
 
     Ok(())
 
