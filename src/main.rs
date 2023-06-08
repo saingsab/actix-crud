@@ -1,3 +1,4 @@
+use secrecy::ExposeSecret;
 use actix_web::{get, web, App, HttpServer};
 use std::error::Error;
 use serde::{Deserialize, Serialize};
@@ -34,6 +35,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let res = sqlx::query("SELECT 1 + 1 as sum")
                 .fetch_one(&pool)
                 .await?;
+
+    let sum: i32 = res.get("sum");
+    println!("1 + 1 = {}", sum);
 
     Ok(())
 
