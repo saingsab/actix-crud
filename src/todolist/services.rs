@@ -14,7 +14,7 @@ async fn create_entry(data: web::Data<AppState>, param_obj: web::Json<CreateEntr
     for i in 0..todolist_entries.len() {
         if todolist_entries[i].id > max_id {
             max_id = todolist_entries[i].id
-        }  
+        }
     }
 
     todolist_entries.push(TodolistEntries {
