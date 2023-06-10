@@ -25,12 +25,33 @@ async fn index() -> String {
 }
 
 async fn createTask(todolist: &TodolistEntries, pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    /*
+    begin commit way
+    let mut tx = conn.begin().await?;
+    after the statment then 
+
+    tx.rollback().await?;
+    */
     let query = "INSERT INTO tbl_todolist (id, title) VALUES ($1, $2)";
 
     let _id = Uuid::new_v4();
     sqlx::query(query)
     .bind(&_id)
     .bind(&todolist.title)
+    .execute(pool)
+    .await?;
+Ok(())
+}
+
+async fn updateTask(todolist: &TodolistEntries, pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    let query = "UPDATE tbl_todolist
+                SET title = $2 
+                WHERE id = ($1::uuid)";
+
+    let _id = "3d516ed8-c656-498c-87b1-46b34e7c7c25";
+    sqlx::query(query)
+    .bind(&_id)
+    .bind(&todolist.title)  
     .execute(pool)
     .await?;
 Ok(())
@@ -43,12 +64,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let url = "postgres://postgres:password@localhost:5432/todolist";
     let pool = sqlx::postgres::PgPool::connect(url).await?;
     
-    let dt = Utc::now();
+    // let dt = Utc::now();
     let todo = TodolistEntries {
-        title: "chean pong tea".to_string(),
+        title: "Learn rust".to_string(),
     };
 
-    createTask(&todo, &pool).await?;
+    // createTask(&todo, &pool).await?;
+    updateTask(&todo, &pool).await?;
 
     Ok(())
 
