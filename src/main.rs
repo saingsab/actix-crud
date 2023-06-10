@@ -57,6 +57,19 @@ async fn updateTask(todolist: &TodolistEntries, pool: &sqlx::PgPool) -> Result<(
 Ok(())
 }
 
+async fn deleteTask(pool: &sqlx::PgPool) -> Result<(), Box<dyn Error>> {
+    // DELETE FROM table_name WHERE condition;
+    let query = "DELETE FROM tbl_todolist
+                 WHERE id = ($1::uuid)";
+
+    let _id = "3d516ed8-c656-498c-87b1-46b34e7c7c25";
+    sqlx::query(query)
+    .bind(&_id)
+    .execute(pool)
+    .await?;
+Ok(())
+}
+
 #[tokio::main]
 // async fn main() -> std::io::Result<()> {
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -70,7 +83,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
 
     // createTask(&todo, &pool).await?;
-    updateTask(&todo, &pool).await?;
+    // updateTask(&todo, &pool).await?;
+    deleteTask(&pool).await?;
 
     Ok(())
 
