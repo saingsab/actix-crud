@@ -1,9 +1,23 @@
 use actix_web::{get, post, put, delete, web, Responder, HttpResponse};
 use crate::{AppState, TodolistEntries};
 use super::models::{CreateEntryData, UpdateEntryData};
+use sqlx::Row;
+use uuid::Uuid;
 
 #[get("/todolist/entries")]
 async fn get_entries(data: web::Data<AppState>) -> impl Responder {
+    let url = "postgres://postgres:password@localhost:5432/todolist";
+    let pool = sqlx::postgres::PgPool::connect(url).await;
+
+    let query = "INSERT INTO tbl_todolist (id, title) VALUES ($1, $2)";
+
+    let _id = Uuid::new_v4();
+    sqlx::query(query)
+        .bind(&_id)
+        .bind(&todolist.title)
+        .execute(&pool)
+        .await;
+
     HttpResponse::Ok().json(data.todolist_entries.lock().unwrap().to_vec())
 }
 
@@ -50,10 +64,10 @@ async fn get_entries(data: web::Data<AppState>) -> impl Responder {
 //     HttpResponse::Ok().json(todolist_entries.to_vec())
 // }
 
-// // look like export the module in node
-// pub fn config (cfg: &mut web::ServiceConfig) {
-//     cfg.service(get_entries)
-//        .service(create_entry)
-//        .service(update_entry)
-//        .service(delete_entry);
-// }
+// look like export the module in node
+pub fn config (cfg: &mut web::ServiceConfig) {
+    cfg.service(get_entries);
+    //    .service(create_entry)
+    //    .service(update_entry)
+    //    .service(delete_entry);
+}
