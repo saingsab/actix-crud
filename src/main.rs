@@ -1,34 +1,30 @@
-use actix_web::{web, App, HttpRequest, HttpResponse, Responder, HttpServer};
-use sqlx::{postgres::PgPool, Pool};
+use actix_web::body::MessageBody;
+use actix_web::middleware::Logger;
+use actix_web::web::service;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use serde_json::json;
 
-#[derive(Debug)]
-struct Todo {
-    id: i32,
-    title: String,
-    completed: bool,
+#[get("/api/healthchecker")]
+async fn health_checker_handler() -> impl Responder {
+    const MESSAGE: &str = "Build Simpile CRUD API with Rust, SQLX Postgres, and Actix Web";
+
+    HttpResponse::Ok().json(json!({"status": "sucess", "message": MESSAGE}))
 }
 
-async fn get_todos(db: &PgPool) -> Result<Vec<Todo>, sqlx::Error> {
-    let todos = db
-        .stream("SELECT id, title, completed FROM todos", &[])
-        .await?
-        .collect::<Vec<_>>()?;
-
-    Ok(todos)
-}
-
-
-async fn health_check(req: HttpRequest) -> impl Responder {
-    HttpResponse::Ok()
-}
-
-#[tokio::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    if std::env::var_os("RUST_LOG").is_none() {
+        std::env::set_var("RUST_LOG", "actix_web=info");
+    }
+    env_logger::init();
+
+    print!("🚀 Server started successfully");
+    HttpServer::new(move || {
         App::new()
-        .route("/health_check", web::get().to(health_check))
+            .service(health_checker_handler)
+            .wrap(Logger::default())
     })
-    .bind("127.0.0.1:8088")?
+    .bind(("127.0.0.1", 8088))?
     .run()
     .await
 }
