@@ -1,9 +1,0 @@
-{
-    "username": "johndoe",
-    "email": "johndoe@example.com",
-    "password": "password123",
-    "first_name": "John",
-    "last_name": "Doe",
-    "created_at": "2023-06-05T01:04:49Z",
-    "updated_at": "2023-06-05T01:04:49Z"
-  }

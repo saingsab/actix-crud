@@ -1,4 +1,22 @@
 use actix_web::{web, App, HttpRequest, HttpResponse, Responder, HttpServer};
+use sqlx::{postgres::PgPool, Pool};
+
+#[derive(Debug)]
+struct Todo {
+    id: i32,
+    title: String,
+    completed: bool,
+}
+
+async fn get_todos(db: &PgPool) -> Result<Vec<Todo>, sqlx::Error> {
+    let todos = db
+        .stream("SELECT id, title, completed FROM todos", &[])
+        .await?
+        .collect::<Vec<_>>()?;
+
+    Ok(todos)
+}
+
 
 async fn health_check(req: HttpRequest) -> impl Responder {
     HttpResponse::Ok()
