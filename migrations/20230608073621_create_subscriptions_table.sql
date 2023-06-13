@@ -1,8 +1,15 @@
 -- Add migration script here
 -- Create Subscriptions Table
-CREATE TABLE tbl_todolist (
-id uuid NOT NULL,
-PRIMARY KEY (id),
-title TEXT NOT NULL,
-created_at timestamptz NOT NULL default current_timestamp,
-updated_at timestamptz);
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE
+    IF NOT EXISTS tbl_todolist (
+        id UUID PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
+        title VARCHAR(255) NOT NULL UNIQUE,
+        created_at TIMESTAMP
+        WITH
+            TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP
+        WITH
+            TIME ZONE DEFAULT NOW()
+    );
